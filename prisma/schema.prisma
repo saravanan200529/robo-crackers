@@ -1,0 +1,177 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  parentId    String?
+  parent      Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToSubcategory")
+  imageUrl    String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id             String             @id @default(cuid())
+  name           String
+  slug           String             @unique
+  sku            String?            @unique
+  description    String?
+  price          Decimal            @db.Decimal(10, 2)   // discounted / quote price
+  mrp            Decimal            @db.Decimal(10, 2)   // original crossed-out price
+  discountPct    Int?               // e.g. 80 for "80% off"
+  categoryId     String
+  category       Category           @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  variations     ProductVariation[]
+  isBestSeller   Boolean            @default(false)
+  isActive       Boolean            @default(true)
+  stockNote      String?            // free text, e.g. "Limited Festive Stock"
+  enquiryItems   EnquiryItem[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductImage {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url        String
+  altText    String?
+  sortOrder  Int      @default(0)
+
+  @@map("product_images")
+}
+
+// Handles pack size / pieces count variations
+model ProductVariation {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label      String   // e.g. "Pack Size", "Pieces Count"
+  value      String   // e.g. "50 Pcs", "1 pkt", "Window Box"
+  priceDelta Decimal  @default(0) @db.Decimal(10, 2)
+
+  @@map("product_variations")
+}
+
+model Discount {
+  id          String    @id @default(cuid())
+  name        String    // e.g. "Diwali 2026 Storewide 80%"
+  percentage  Int
+  startsAt    DateTime
+  endsAt      DateTime
+  categoryId  String?   // null = storewide
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@map("discounts")
+}
+
+model Customer {
+  id          String     @id @default(cuid())
+  name        String
+  phone       String     @unique
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  pincode     String?
+  enquiries   Enquiry[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("customers")
+}
+
+model Enquiry {
+  id            String        @id @default(cuid())
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  status        EnquiryStatus @default(PENDING)
+  items         EnquiryItem[]
+  totalEstimate Decimal       @db.Decimal(10, 2)
+  notes         String?
+  whatsappUrl   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("enquiries")
+}
+
+model EnquiryItem {
+  id          String   @id @default(cuid())
+  enquiryId   String
+  enquiry     Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  priceAtTime Decimal  @db.Decimal(10, 2)
+
+  @@map("enquiry_items")
+}
+
+enum EnquiryStatus {
+  PENDING
+  CONTACTED
+  CONFIRMED
+  CANCELLED
+}
+
+model Admin {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  passwordHash       String
+  role               AdminRole @default(STAFF)
+  mustChangePassword Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  STAFF
+}
+
+model SiteSetting {
+  id                 String   @id @default("default")
+  businessName       String   @default("Robo Crackers (ROBO Agencies)")
+  operatingSince     String   @default("1985")
+  phone              String   @default("+916369401248")
+  whatsappNumber     String   @default("919342764302")
+  email              String   @default("contact@sivakasirobofireworks.in")
+  address            String   @default("ROBO Agencies, 42/1 Main Road, Sivakasi, Tamil Nadu 626123")
+  gstin              String   @default("33ABKFR4114P1ZW")
+  isGstinVerified    Boolean  @default(false) // [UNVERIFIED — CONFIRM BEFORE GO-LIVE]
+  licenseNo          String   @default("LE-5/54/2024")
+  isLicenseVerified  Boolean  @default(false) // [UNVERIFIED — CONFIRM BEFORE GO-LIVE]
+  minOrderValue      Decimal  @default(3000) @db.Decimal(10, 2)
+  legalNotice        String   @default("As per 2018 supreme court order, online sale of firecrackers are not permitted. Add products to the cart and submit the required crackers through the enquiry button. We will contact you within 24 hrs and confirm the order through WhatsApp or phone call.")
+  updatedAt          DateTime @updatedAt
+
+  @@map("site_settings")
+}
+

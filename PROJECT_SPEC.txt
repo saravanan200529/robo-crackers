@@ -1,0 +1,258 @@
+================================================================================
+PROJECT SPECIFICATION — "ROBO CRACKERS" FIREWORKS E-COMMERCE PLATFORM (REBUILD)
+================================================================================
+Document type : Master build instructions for an AI coding agent (Antigravity CLI/IDE)
+Prepared as   : Senior Solutions Architect + Tech Lead + Engineering Manager +
+                Product Designer handoff document
+Audience      : AI coding agent (primary), solo human developer (secondary)
+Reference site: https://sivakasirobofireworks.in/
+Last updated  : 2026-09-06
+
+--------------------------------------------------------------------------------
+HOW TO USE THIS FILE
+--------------------------------------------------------------------------------
+Paste this entire file into Antigravity CLI/IDE as the project brief, or point
+the agent at this file with an instruction such as:
+
+  "Read PROJECT_SPEC.txt fully before writing any code. Follow its architecture,
+  folder structure, naming conventions, and phased build order exactly. Ask me
+  for missing product data before inventing placeholder content. Build phase
+  by phase, in the order given in Section 12, and do not skip ahead."
+
+Everything below is written so an AI agent can execute it directly: concrete
+folder names, concrete file names, concrete schema, concrete package choices.
+Where real data was not available to the author of this spec (full product
+catalog, exact discounts per SKU, legal registration numbers), this is marked
+clearly as [NEEDS REAL DATA] — the agent must NOT invent numbers or legal
+details; it must leave a TODO and ask the human.
+
+================================================================================
+SECTION 0 — EXECUTIVE SUMMARY (for the Manager hat)
+================================================================================
+We are rebuilding an existing OpenCart-based fireworks catalog/enquiry site
+(sivakasirobofireworks.in, brand "Robo Crackers", operating since 1985 under
+"ROBO Agencies") as a modern, fast, mobile-app-like web application.
+
+Business constraints that shape the whole architecture:
+ - Per a 2018 Supreme Court of India order, fireworks CANNOT be sold online.
+   The site must remain an ENQUIRY / QUOTE CART model, not a real checkout.
+   Customers add items to a cart, submit an enquiry, and the business follows
+   up via WhatsApp/phone call to confirm and close the sale offline.
+ - Therefore: no payment gateway, no card storage, no online transaction
+   processing. This drastically simplifies compliance and security scope.
+ - Traffic is highly seasonal (Diwali/Deepavali peak, near-zero the rest of
+   the year) — architecture must scale to near-zero cost off-season and
+   handle a short, sharp spike in October/November.
+ - Many customers are on low-end Android phones with patchy rural/small-town
+   internet (Tamil Nadu) — performance on slow 3G/4G is a hard requirement,
+   not a nice-to-have.
+ - Owner wants an admin panel to manage products, categories, discounts,
+   enquiries/orders, and export customer lists to Excel.
+
+Two audiences, two experiences, one codebase:
+ 1. Public storefront — looks and feels like a native mobile app in the
+    browser (app-style top bar, bottom navigation, smooth transitions),
+    installable as a PWA, fast on slow networks, and SEO-indexable.
+ 2. Admin dashboard — a separate, authenticated area for staff to manage
+    catalog, enquiries, and customers, and export data to Excel.
+
+================================================================================
+SECTION 1 — TECH STACK (Architect hat) — WHY EACH CHOICE
+================================================================================
+Chosen because the developer is solo, already comfortable with a strongly
+typed language (Dart/Flutter professionally), and needs one language across
+the whole stack to move fast without context-switching.
+
+FRONTEND
+ - Next.js 15 (App Router) + React 19 + TypeScript
+     Reasoning: server-side rendering + static generation = best SEO;
+     one framework does both frontend pages AND backend API routes.
+ - Tailwind CSS v4
+     Reasoning: fastest way for a solo dev to build a consistent, responsive,
+     "app-like" design system without hand-writing CSS files per component.
+ - Framer Motion
+     Reasoning: production-grade animation library, small footprint,
+     works great for page transitions, add-to-cart micro-animations,
+     skeleton-to-content fades — all without hurting load time if used
+     selectively (see Section 6, Performance Budget).
+ - next-pwa (or Serwist, its maintained successor)
+     Reasoning: turns the site into an installable Progressive Web App with
+     a service worker, so return visitors get app-icon-on-homescreen,
+     offline shell, and instant repeat loads — this is what makes a browser
+     site "feel like a mobile app."
+
+BACKEND
+ - Next.js Route Handlers (app/api/*) written in TypeScript, running on
+   Node.js 20 LTS.
+     Reasoning: no second backend project/repo to maintain solo; same
+     language and types shared between frontend and backend (see Section 4,
+     shared types).
+ - Prisma ORM
+     Reasoning: type-safe database access, auto-generated types, easy
+     migrations — ideal for a solo dev who wants speed with safety.
+
+DATABASE
+ - PostgreSQL 16 (hosted: Neon or Supabase — both have serverless/autoscale
+   free tiers that fit the "near-zero off-season, spike at Diwali" traffic
+   pattern; both support branching for safe testing of schema changes).
+     Reasoning: relational integrity for Orders/Customers/Products, strong
+     JSON support for flexible product attributes (variations), mature
+     tooling.
+
+CACHING LAYER
+ - Next.js built-in Data Cache + Full Route Cache (ISR — Incremental Static
+   Regeneration) for product/category pages.
+ - Upstash Redis (serverless, pay-per-request, fits the seasonal-traffic
+   model) for:
+     - Session/rate-limit counters
+     - Hot data (best-sellers, homepage banners, category tree)
+     - Enquiry-cart temporary storage for guest users
+ - CDN edge caching via Vercel Edge Network (or Cloudflare in front of it)
+   for all static assets and image variants.
+
+AUTH
+ - NextAuth.js (Auth.js) v5
+     - Customers: optional lightweight auth (phone/OTP or email) — mainly
+       needed to save wishlist/track enquiry status; browsing/adding to
+       cart/submitting an enquiry does NOT require login (reduces friction).
+     - Admin/staff: separate credentials-based login, role-gated
+       (SUPER_ADMIN, STAFF), completely isolated route group `/admin`.
+
+FILE/IMAGE STORAGE
+ - Cloudflare R2 or Supabase Storage for product images (S3-compatible,
+   cheap, no egress fees on R2).
+ - next/image for automatic responsive resizing, AVIF/WebP conversion,
+   and lazy loading — this is the single biggest lever for "fast on low
+   internet."
+
+EXCEL EXPORT
+ - exceljs (npm) — generates .xlsx files server-side on demand from the
+   admin panel (customer list, enquiry list, product list).
+
+MONITORING / ANALYTICS
+ - Vercel Analytics + Speed Insights (Core Web Vitals tracking — directly
+   measures the "low internet, fast" requirement in production).
+ - Sentry (free tier) for error tracking on both frontend and API routes.
+
+HOSTING / DEPLOYMENT
+ - Vercel for the Next.js app (zero-config CI/CD from Git, global edge
+   network, automatic preview deployments per branch/PR).
+ - Neon/Supabase for the database (separate from compute, scales
+   independently).
+
+================================================================================
+SECTION 2 — HIGH-LEVEL ARCHITECTURE DIAGRAM
+================================================================================
+Text/ASCII version:
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                         CLIENT DEVICES                            │
+    │   Mobile browser (PWA installed)  |  Desktop browser  |  Tablet   │
+    └───────────────┬────────────────────────────────────────┬─────────┘
+                     │ HTTPS                                  │ HTTPS
+                     ▼                                        ▼
+            ┌────────────────────┐                  ┌────────────────────┐
+            │   CDN / Edge Cache  │                  │   CDN / Edge Cache  │
+            │ (Vercel Edge Net)   │                  │   (static assets,   │
+            │ static + ISR pages  │                  │   images, JS/CSS)   │
+            └─────────┬───────────┘                  └─────────┬──────────┘
+                      │ cache miss                              │ cache miss
+                      ▼                                          ▼
+        ┌───────────────────────────────────────────────────────────────┐
+        │                 NEXT.JS APPLICATION (Vercel)                   │
+        │  ┌───────────────────────┐   ┌────────────────────────────┐   │
+        │  │  Public Storefront     │   │  Admin Dashboard            │   │
+        │  │  (app/(storefront)/*)  │   │  (app/(admin)/admin/*)      │   │
+        │  │  SSR + ISR pages       │   │  Auth-gated, CSR-heavy       │   │
+        │  └───────────┬────────────┘   └───────────────┬─────────────┘   │
+        │              │                                  │               │
+        │              ▼                                  ▼               │
+        │  ┌─────────────────────────────────────────────────────────┐   │
+        │  │            API ROUTE HANDLERS (app/api/*)                │   │
+        │  │  /api/products  /api/categories  /api/enquiries          │   │
+        │  │  /api/auth      /api/admin/*     /api/export/excel       │   │
+        │  └───────────────┬───────────────────────┬───────────────────┘   │
+        └──────────────────┼───────────────────────┼───────────────────────┘
+                            │                       │
+                 ┌──────────▼─────────┐   ┌─────────▼──────────┐
+                 │   Upstash Redis     │   │   Prisma ORM Layer  │
+                 │ (hot cache, rate-   │   │                     │
+                 │  limit, cart cache) │   └─────────┬───────────┘
+                 └─────────────────────┘             │
+                                                       ▼
+                                         ┌──────────────────────────┐
+                                         │  PostgreSQL (Neon/Supabase)│
+                                         │  Products, Categories,     │
+                                         │  Customers, Enquiries,      │
+                                         │  Admins, Discounts          │
+                                         └──────────────────────────┘
+
+                 ┌─────────────────────────────────────────┐
+                 │  Object Storage (Cloudflare R2 / Supabase)│
+                 │  Product images, banners (served via CDN) │
+                 └─────────────────────────────────────────┘
+
+                 ┌─────────────────────────────────────────┐
+                 │  WhatsApp Business API / wa.me deep link  │
+                 │  (enquiry hand-off to phone/WhatsApp,      │
+                 │   same pattern as the reference site)      │
+                 └─────────────────────────────────────────┘
+
+================================================================================
+SECTION 3 — SEQUENCE DIAGRAMS (key user flows)
+================================================================================
+3.1 CUSTOMER BROWSES + SUBMITS AN ENQUIRY (no login required)
+3.2 ADMIN MANAGES PRODUCTS
+3.3 ADMIN EXPORTS CUSTOMER LIST TO EXCEL
+
+================================================================================
+SECTION 4 — FOLDER STRUCTURE & FILE NAMING CONVENTIONS
+================================================================================
+robo-crackers/
+├── app/
+│   ├── (storefront)/                      # public-facing route group
+│   ├── (admin)/admin/                     # admin route group
+│   └── api/                               # API route handlers
+├── components/
+│   ├── storefront/
+│   ├── admin/
+│   └── shared/
+├── lib/
+├── prisma/
+├── public/
+├── types/
+└── PROJECT_SPEC.txt
+
+================================================================================
+SECTION 5 — DATABASE SCHEMA (Prisma)
+================================================================================
+Refer to prisma/schema.prisma for the complete Prisma schema with PostgreSQL provider.
+
+================================================================================
+SECTION 7 — REAL DATA EXTRACTED FROM THE REFERENCE SITE
+================================================================================
+Brand name: Robo Crackers (ROBO Fireworks / ROBO Agencies)
+Since: 1985
+Phone: +91 96296 59379
+WhatsApp: +91 93427 64302
+License No.: LE-5/54/2024 [UNVERIFIED — CONFIRM BEFORE GO-LIVE]
+GSTIN: 33ABKFR4114P1ZW [UNVERIFIED — CONFIRM BEFORE GO-LIVE]
+Legal notice:
+"As per 2018 supreme court order, online sale of firecrackers are not
+permitted. Add products to the cart and submit the required crackers
+through the enquiry button. We will contact you within 24 hrs and
+confirm the order through WhatsApp or phone call."
+
+Categories (8 Top-Level) and Subcategories (40 Total):
+1. Kid's Attraction (Digital Lar / Digital Shower, Gun, Mud Pot, Multi Colour Special Shower, Multi Function Novelties, Musical Novelties, New Arrival, Party Attraction, Toys)
+2. Combo (Combo Packs)
+3. Day Crackers (Bijili Crackers, Bombs, Gold Bijili (Window), One Sound Crackers, Rockets)
+4. Night Shots Pipes (2 1/2" Pipe Comet Single, 2" Pipe (3 Pcs Packing), 2" Pipe Comet Single Pack, 3 1/2" Pipe (Single Pc Packing), 3 1/2" Pipe Aerial Attraction Special, 4" Pipe Mega Aerial, 5" Pipe Mega Aerial, Chotta Fancy 1 1/4" Pipe, Sky Shot Window Pack)
+5. Gift Box (Robo's Gift Box, Echo Gift Box Economy Series)
+6. Hand Held (Mega Candles, Pencils, Sparklers, Twinkling Star)
+7. Night Crackers (Peacock Series, Flower Pots, Flower Pots (Window Box), Ground Chakkar, Wheel Series Window Pack)
+8. Night Shots Cakes (Display Shots, Mega Repeating Shot (Economy), Multi Colour Shots (Premium), Musical Shots Whistling, Repeating Shots)
+
+Products:
+30 verified SKUs observed from the live site catalog with selling price and MRP at flat 80% discount.
+================================================================================
