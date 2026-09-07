@@ -6,10 +6,15 @@ const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 const isProduction = process.env.NODE_ENV === 'production';
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
 
-// Production safety safeguard: Fail loudly at runtime in production if Redis credentials are missing
+// Graceful degradation: if Upstash credentials are missing, fall back to an
+// in-memory rate limiter instead of crashing the API at import time.
+// In production, distributed (serverless-safe) rate limiting is strongly
+// recommended - set UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN to
+// enforce limits across all function instances.
 if (isProduction && !isBuildTime && (!upstashUrl || !upstashToken)) {
-  throw new Error(
-    'CRITICAL SECURITY ERROR: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be configured in production to enforce distributed rate-limiting on public endpoints.'
+  console.warn(
+    'WARNING: UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are missing. ' +
+      'Falling back to in-memory rate limiting (per serverless instance).'
   );
 }
 
@@ -25,13 +30,6 @@ class DevMemoryRatelimit {
   }
 
   async limit(identifier: string): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
-    // Fail loudly if ever invoked at runtime in production without Redis credentials
-    if (isProduction && (!upstashUrl || !upstashToken)) {
-      throw new Error(
-        'CRITICAL SECURITY ERROR: Distributed rate limiting requires valid UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in production.'
-      );
-    }
-
     const now = Date.now();
     const timestamps = this.hits.get(identifier) || [];
     const validTimestamps = timestamps.filter((t) => now - t < this.windowMs);
