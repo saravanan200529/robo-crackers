@@ -3,7 +3,7 @@ import { Phone, MessageCircle, MapPin, Clock, ShieldCheck } from 'lucide-react';
 
 export const metadata = {
   title: 'Contact Us — Robo Crackers Sivakasi Office & Wholesale Booking',
-  description: 'Reach Robo Fireworks in Sivakasi. Direct call +91 96296 59379, WhatsApp +91 93427 64302. Enquire about festival fireworks wholesale orders.',
+  description: 'Reach Robo Fireworks in Sivakasi. Direct call +91 96296 59379, WhatsApp +91 96296 59379. Enquire about festival fireworks wholesale orders.',
 };
 
 export default function ContactUsPage() {
@@ -34,12 +34,12 @@ export default function ContactUsPage() {
               Fastest response for quotation estimates, item availability, and delivery dispatch updates.
             </p>
             <span className="font-mono text-base font-bold text-emerald-800 block">
-              +91 93427 64302
+              +91 96296 59379
             </span>
           </div>
 
           <a
-            href="https://wa.me/919342764302"
+            href="https://wa.me/919629659379"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition"

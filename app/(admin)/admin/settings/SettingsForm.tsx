@@ -11,7 +11,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [formData, setFormData] = useState({
     businessName: initialSettings.businessName || 'Robo Crackers',
     phone: initialSettings.phone || '+91 96296 59379',
-    whatsappNumber: initialSettings.whatsappNumber || '919342764302',
+    whatsappNumber: initialSettings.whatsappNumber || '919629659379',
     gstin: initialSettings.gstin || '33ABKFR4114P1ZW',
     isGstinVerified: initialSettings.isGstinVerified || false,
     licenseNo: initialSettings.licenseNo || 'LE-5/54/2024',

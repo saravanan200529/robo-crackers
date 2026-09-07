@@ -27,7 +27,7 @@ async function main() {
       businessName: 'Robo Crackers (ROBO Agencies)',
       operatingSince: '1985',
       phone: '+91 96296 59379',
-      whatsappNumber: '919342764302',
+      whatsappNumber: '919629659379',
       gstin: '33ABKFR4114P1ZW',
       isGstinVerified: false, // [UNVERIFIED — CONFIRM BEFORE GO-LIVE]
       licenseNo: 'LE-5/54/2024',

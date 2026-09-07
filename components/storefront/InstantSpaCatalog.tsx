@@ -526,7 +526,7 @@ export function InstantSpaCatalog({ categories, allProducts }: SpaCatalogProps) 
                       View Full Details & Specs →
                     </Link>
                     <a
-                      href={`https://wa.me/919342764302?text=${encodeURIComponent(
+                      href={`https://wa.me/919629659379?text=${encodeURIComponent(
                         `Hello Robo Crackers, enquiring about "${quickViewProduct.name}" (Quote ₹${Number(
                           quickViewProduct.price
                         ).toFixed(2)})`

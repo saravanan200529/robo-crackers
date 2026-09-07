@@ -3,6 +3,7 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -161,7 +162,7 @@ model SiteSetting {
   businessName       String   @default("Robo Crackers (ROBO Agencies)")
   operatingSince     String   @default("1985")
   phone              String   @default("+916369401248")
-  whatsappNumber     String   @default("919342764302")
+  whatsappNumber     String   @default("919629659379")
   email              String   @default("contact@sivakasirobofireworks.in")
   address            String   @default("ROBO Agencies, 42/1 Main Road, Sivakasi, Tamil Nadu 626123")
   gstin              String   @default("33ABKFR4114P1ZW")

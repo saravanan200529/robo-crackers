@@ -91,7 +91,7 @@ export function QuotePdfModal({ isOpen, onClose, quoteData }: QuotePdfModalProps
                 42/1 Main Road, Sivakasi, Tamil Nadu – 626123 • Since 1985
               </p>
               <p className="text-xs text-slate-600 mt-0.5 font-semibold">
-                Phone: +91 96296 59379 • WhatsApp: +91 93427 64302
+                Phone: +91 96296 59379 • WhatsApp: +91 96296 59379
               </p>
             </div>
 

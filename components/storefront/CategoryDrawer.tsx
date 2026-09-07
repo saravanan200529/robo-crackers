@@ -115,7 +115,7 @@ export function CategoryDrawer({ isOpen, onClose, categories }: CategoryDrawerPr
               <span className="font-bold text-slate-700">Need Immediate Assistance?</span>
               <div className="flex items-center gap-2">
                 <a
-                  href="https://wa.me/919342764302"
+                  href="https://wa.me/919629659379"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition"

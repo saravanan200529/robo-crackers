@@ -64,7 +64,7 @@ export default async function HomePage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
-                href="https://wa.me/919342764302?text=Hello%20Robo%20Crackers,%20I%20want%20to%20know%20more%20about%20your%20festival%20price%20list"
+                href="https://wa.me/919629659379?text=Hello%20Robo%20Crackers,%20I%20want%20to%20know%20more%20about%20your%20festival%20price%20list"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 text-white font-bold text-sm px-5 py-3 rounded-xl border border-white/20 transition"

@@ -22,7 +22,7 @@ export interface WhatsAppEnquiryPayload {
  */
 export function buildWhatsAppEnquiryUrl(
   payload: WhatsAppEnquiryPayload,
-  businessNumber: string = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919342764302'
+  businessNumber: string = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919629659379'
 ): string {
   // Strip any leading +, spaces, or dashes
   const cleanNumber = businessNumber.replace(/[^\d]/g, '');

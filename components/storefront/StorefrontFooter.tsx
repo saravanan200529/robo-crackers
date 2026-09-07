@@ -99,12 +99,12 @@ export function StorefrontFooter() {
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                 <a
-                  href="https://wa.me/919342764302"
+                  href="https://wa.me/919629659379"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white text-emerald-400 transition"
                 >
-                  +91 93427 64302 (WhatsApp Support)
+                  +91 96296 59379 (WhatsApp Support)
                 </a>
               </div>
             </div>

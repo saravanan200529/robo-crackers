@@ -84,7 +84,7 @@ export function AppTopBar({ categories = [] }: AppTopBarProps) {
                 <span>+91 96296 59379</span>
               </a>
               <a
-                href="https://wa.me/919342764302"
+                href="https://wa.me/919629659379"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white flex items-center gap-1 text-emerald-400 transition"

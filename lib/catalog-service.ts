@@ -288,7 +288,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   businessName: 'Robo Crackers (ROBO Agencies)',
   operatingSince: '1985',
   phone: '+91 96296 59379',
-  whatsappNumber: '919342764302',
+  whatsappNumber: '919629659379',
   email: 'contact@sivakasirobofireworks.in',
   address: 'ROBO Agencies, 42/1 Main Road, Sivakasi, Tamil Nadu 626123',
   gstin: '33ABKFR4114P1ZW',

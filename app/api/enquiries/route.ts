@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         totalEstimate,
         notes,
       },
-      siteSettings.whatsappNumber || '919342764302'
+      siteSettings.whatsappNumber || '919629659379'
     );
 
     // Save generated WhatsApp link to the enquiry record if DB is accessible

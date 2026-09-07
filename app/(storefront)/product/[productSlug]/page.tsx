@@ -47,7 +47,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const mrpNum = Number(product.mrp);
 
   // WhatsApp prefilled link for this specific SKU
-  const waProductLink = `https://wa.me/919342764302?text=${encodeURIComponent(
+  const waProductLink = `https://wa.me/919629659379?text=${encodeURIComponent(
     `Hello Robo Crackers, I am enquiring about "${product.name}" (Wholesale Quote ₹${priceNum.toFixed(2)}). Is this available in stock?`
   )}`;
 
